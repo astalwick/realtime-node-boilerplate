@@ -1,0 +1,19 @@
+{
+  "name": "realtime.node.boilerplate"
+, "version": "0.0.1"
+
+, "author": "Arlen Stalwick <arlen@nsono.net>"
+, "main": "app.js"
+, "engines": {
+    "node": ">=0.8.0"
+  }
+
+, "dependencies": {
+      "socket.io"           : "0.9.x"
+    , "async"               : "0.2.x"
+    , "underscore"          : "1.4.x"
+    , "express"             : "3.x"
+    , "jade"                : "0.30.x"
+    , "jade-browser"        : "0.x"
+  }
+}
