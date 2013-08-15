@@ -24,11 +24,16 @@ define(
    * ======================================================================= */
 
   view.events = {
+    'click .increment-counter' : 'onIncrementCounter'
   }
 
   /* ======================================================================= *
    *  EVENT HANDLERS                                                         *
    * ======================================================================= */  
+  view.onIncrementCounter = function(e) {
+    this.counter++;
+    this.render();
+  }
 
   /* ======================================================================= *
    *  PRIVATE CLASS METHODS                                                  *
@@ -38,7 +43,7 @@ define(
    *  PUBLIC CLASS METHODS                                                   *
    * ======================================================================= */
   view.render = function() {
-    this.$el.html(jade.render('page.view', { }));
+    this.$el.html(jade.render('page.view', { counter: this.counter }));
     return this;
   }
 
@@ -48,6 +53,7 @@ define(
   view.initialize = function(options) {
     var that = this;
     _.bindAll(this);
+    this.counter = 0;
     
     /* EXAMPLE CODE FOR BINDING COLLECTIONS AND MODELS TO IOBIND */
     /*
