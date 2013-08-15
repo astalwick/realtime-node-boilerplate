@@ -36,7 +36,7 @@ define(
   collection.constructor = function(models, options) {
     _.bindAll(this);
     
-    this.url = 'item';
+    this.url = 'items';
     this.itemId = options.itemId;
 
     Backbone.Collection.call(this, models, options);

@@ -4,9 +4,6 @@ define(
   , 'backbone'
 
   , 'models/item.model'
-  , 'collections/item.collection'
-
-  , 'views/item.view'
   , 'templates'
   ]
 
@@ -15,8 +12,6 @@ define(
 , Backbone
 
 , ItemModel
-, ItemCollection
-, ItemView
 
 , Templates
 ){
@@ -26,48 +21,53 @@ define(
   /* ======================================================================= *
    *  ATTRIBUTES                                                             *
    * ======================================================================= */
+  view.className = 'row'
 
   /* ======================================================================= *
    *  EVENTS                                                                 *
    * ======================================================================= */
 
   view.events = {
-    'click .add-item' : 'onAddItem'
+    'click .delete' : 'onDeleteItem'
+  , 'click .update' : 'onUpdateItem'
   }
 
   /* ======================================================================= *
    *  EVENT HANDLERS                                                         *
    * ======================================================================= */  
-  view.onAddItem = function(e) {
-    var item = new ItemModel({text: this.$('.item-text').val()})
-    item.save();
-    this.collection.add(item)
-    this.$('.item-text').val('')
+  view.onDeleteItem = function() {
+    console.log('button delete')
+    this.model.destroy();
+    this.remove();
+  }
+
+  view.onUpdateItem = function() {
+    console.log('save')
+    this.model.set('text', this.$('.text').val());
+    this.model.save();
   }
 
   /* ======================================================================= *
    *  PRIVATE CLASS METHODS                                                  *
    * ======================================================================= */
-
-  view.ioCreatedItem = function(attributes) {
-    var model = new ItemModel(attributes);
-    this.collection.add(model);
+  view.ioUpdate = function(attributes) {
+    console.log('ioupdate')
+    this.model.set(attributes, {silent: true});
+    this.render();
   }
 
-  view.ioDeletedItem = function() {
-    console.log('deleted items', arguments)
-  }
-
-  view.addItemView = function(model) {
-    model.on('removed', this.modelRemoved)
-    this.$el.append(new ItemView({model: model}).render().el);
+  view.ioDelete = function() {
+    console.log('ioDelete')
+    this.remove();
+    this.model.trigger('destroy')
   }
 
   /* ======================================================================= *
    *  PUBLIC CLASS METHODS                                                   *
    * ======================================================================= */
   view.render = function() {
-    this.$el.html(jade.render('page.view', { counter: this.counter }));
+    console.log('render')
+    this.$el.html(jade.render('item.view', { model: this.model.attributes }));
     return this;
   }
 
@@ -77,16 +77,24 @@ define(
   view.initialize = function(options) {
     var that = this;
     _.bindAll(this);
-    this.counter = 0;
 
-    this.collection = new ItemCollection([], {});
-    this.collection.fetch({
-      success: function() {
-        that.collection.ioBind('create', that.ioCreatedItem)
-      }
-    })
-
-    this.collection.on('add', this.addItemView);
+    this.model = options.model;
+    console.log('model', this.model.id)
+    if(!this.model.isNew()) {
+      console.log('bound ', this.model.id)
+      this.model.ioBind('update', that.ioUpdate);
+      this.model.ioBind('patch', that.ioUpdate);
+      this.model.ioBind('delete', that.ioDelete)      
+    }
+    else {
+      this.model.once('sync', function() {
+        console.log('OH BOUND')
+        that.model.ioBind('update', that.ioUpdate);
+        that.model.ioBind('patch', that.ioUpdate);
+        that.model.ioBind('delete', that.ioDelete)      
+      })
+    }
+    
   }
 
   /* ======================================================================= */

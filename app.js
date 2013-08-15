@@ -73,53 +73,53 @@ var io = require('socket.io').listen(server);
  * of the pages in mirror. our client-side model
  * and collection ioBinds will pick up these events
  */
+var nextId = 0;
+var items = [];
 
 io.sockets.on('connection', function (socket) {
 
-  socket.on('item:create', function (data, callback) {
-    /* do something to 'create' the whatever */
-    var response = {
-      created: true
-    }
+  socket.on('items:create', function (data, callback) {
+    /* do something to 'create' the item */
+    console.log('CREATE ITEM', data)
+
+    var item = { text: data.text, id: nextId++ };
+    items.push(item);
 
     // echo the response
     callback(null, item)
-    socket.broadcast.emit('item:create', item);
-    socket.emit('item:create', item);
+    socket.broadcast.emit('items:create', item);
+    socket.emit('items:create', item);
   });
 
-  socket.on('item:read', function (data, callback) {
+  socket.on('items:read', function (data, callback) {
     /* do something to 'read' the whatever */
-    var item = {
-        text: 'hello world'
-      , read: true
+    if(data && data.id) {
+      callback(null, _.findWhere(items, { id: data.id }));
     }
-    callback(err, item);
+    else {
+      callback(null, items)
+    }
   });
 
-  socket.on('item:update', function (data, callback) {
-    var item = {
-      updated: true
-    }
-    socket.broadcast.emit('item/' + data.id + ':update', item);
+  socket.on('items:update', function (data, callback) {
+    var item = _.findWhere(items, { id: data.id })
+    item.text = data.text;
+    socket.broadcast.emit('items/' + data.id + ':update', item);
     callback(null, item);
   });
 
-  socket.on('albums:patch', function (data, callback) {
-    var item = {
-      patched: true
-    }
-    socket.broadcast.emit('item/' + data.id + ':update', item);
+  socket.on('items:patch', function (data, callback) {
+    var item = _.findWhere(items, { id: data.id })
+    item.text = data.text;
+    socket.broadcast.emit('items/' + data.id + ':update', item);
     callback(null, item);
   });
 
-  socket.on('albums:delete', function (data, callback) {
-    var item = {
-      deleted: true
-    }    
-    socket.broadcast.emit('albums/' + data.id + ':delete', json);
-    socket.emit('albums/' + data.id + ':delete', json);
-    callback(null, json);    
+  socket.on('items:delete', function (data, callback) {
+    items = _.reject(items, function(i) { return i.id == data.id });
+    socket.broadcast.emit('items/' + data.id + ':delete', {id: data.id});
+    socket.emit('items/' + data.id + ':delete', {id: data.id});
+    callback(null, {id: data.id});    
   });
 
 });
